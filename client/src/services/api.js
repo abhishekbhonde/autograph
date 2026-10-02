@@ -1,4 +1,5 @@
-const API_BASE = '/api/signatures';
+const BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://autograph-9cm9.onrender.com' : '');
+const API_BASE = `${BASE_URL}/api/signatures`;
 
 export async function fetchSignatures(limit = 20, cursor = null) {
   const params = new URLSearchParams();
@@ -8,7 +9,7 @@ export async function fetchSignatures(limit = 20, cursor = null) {
   const res = await fetch(`${API_BASE}?${params.toString()}`);
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Failed to fetch Hall of Fame signatures');
+    throw new Error(errorData.message || 'Failed to fetch signatures');
   }
   return res.json(); // { items: [...], nextCursor: '...' }
 }

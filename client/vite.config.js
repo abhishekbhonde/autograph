@@ -24,7 +24,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: 'https://autograph-9cm9.onrender.com',
         changeOrigin: true,
       }
     }
