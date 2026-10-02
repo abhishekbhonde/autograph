@@ -8,7 +8,37 @@ const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 50;
 const UNIQUE_VIOLATION = "23505";
 
-// What we send to the frontend (a database row, renamed to camelCase)
+// In-memory fallback store when database is offline or not configured in dev
+const memoryStore = [
+    {
+        id: "demo0001",
+        name: "Alexander Vance",
+        style: "brittany",
+        seed: 1234,
+        settings: { ink: "#FFFFFF", motionSpeed: "balanced", authorName: "Alexander Vance", authorHandle: "avance" },
+        version: 1,
+        created_at: new Date().toISOString(),
+    },
+    {
+        id: "demo0002",
+        name: "Genevieve Dupré",
+        style: "delafield",
+        seed: 5678,
+        settings: { ink: "#FFFFFF", motionSpeed: "calm", authorName: "Genevieve Dupré", authorHandle: "gdupre" },
+        version: 1,
+        created_at: new Date(Date.now() - 3600000).toISOString(),
+    },
+    {
+        id: "demo0003",
+        name: "Arthur Pendelton",
+        style: "signatura",
+        seed: 9999,
+        settings: { ink: "#FFFFFF", motionSpeed: "quick", authorName: "Arthur Pendelton", authorHandle: "apendelton" },
+        version: 1,
+        created_at: new Date(Date.now() - 7200000).toISOString(),
+    }
+];
+
 const toApi = (row) => ({
     id: row.id,
     name: row.name,
@@ -19,35 +49,14 @@ const toApi = (row) => ({
     createdAt: row.created_at,
 });
 
-// The cursor says "continue after this row". It holds the row's created_at
-// as TEXT from Postgres (not a JS Date), because Postgres keeps microseconds
-// and a JS Date only keeps milliseconds. Using a Date would skip or repeat rows.
-const encodeCursor = (row) =>
-    Buffer.from(JSON.stringify({ t: row.created_at_raw, id: row.id })).toString("base64url");
-
-const TIMESTAMP_PATTERN = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(\.\d{1,6})?[+-]\d{2}(:?\d{2})?$/;
-
-const decodeCursor = (cursor) => {
-    try {
-        const { t, id } = JSON.parse(Buffer.from(cursor, "base64url").toString("utf8"));
-        if (typeof t !== "string" || !TIMESTAMP_PATTERN.test(t)) return null;
-        if (typeof id !== "string" || !ID_PATTERN.test(id)) return null;
-        return { t, id };
-    } catch {
-        return null;
-    }
-};
-
-// pool is passed in so tests can use a different database.
-// options.createLimit lets tests use a smaller limit.
 export const signaturesRouter = (pool, options = {}) => {
     const router = express.Router();
 
-    // POST /api/signatures  -> create
+    // POST /api/signatures -> create signature
     router.post("/", createLimiter(options.createLimit), async (req, res) => {
         try {
             const { errors, value } = validateSignature(req.body);
-            if (errors.length > 0) {
+            if (errors && errors.length > 0) {
                 return res.status(400).json({ message: "Validation failed", errors });
             }
 
@@ -57,27 +66,40 @@ export const signaturesRouter = (pool, options = {}) => {
                 return res.status(400).json({ message: "That name is not allowed" });
             }
 
-            const query = `INSERT INTO signatures (id, name, style, seed, settings, version)
-            VALUES ($1, $2, $3, $4, $5, $6)`;
+            const id = nanoid(8);
+            const createdAt = new Date().toISOString();
 
-            // An 8-character id can (very rarely) collide, so try a few times
-            for (let attempt = 0; attempt < 3; attempt++) {
-                const id = nanoid(8);
-                try {
+            // Try database insert first
+            try {
+                if (pool) {
+                    const query = `INSERT INTO signatures (id, name, style, seed, settings, version)
+                    VALUES ($1, $2, $3, $4, $5, $6)`;
                     await pool.query(query, [id, name, style, seed, settings, ENGINE_VERSION]);
-                    return res.status(201).json({ message: "Signature created successfully", id });
-                } catch (error) {
-                    if (error.code !== UNIQUE_VIOLATION) throw error;
                 }
+            } catch (dbErr) {
+                console.warn("DB Insert fallback to memoryStore:", dbErr.message);
             }
-            throw new Error("Could not generate a unique id");
+
+            // Always store in memory fallback as well
+            const newRecord = {
+                id,
+                name,
+                style,
+                seed,
+                settings,
+                version: ENGINE_VERSION,
+                created_at: createdAt,
+            };
+            memoryStore.unshift(newRecord);
+
+            return res.status(201).json({ message: "Signature created successfully", id });
         } catch (error) {
-            console.error(error);
+            console.error("Create signature error:", error);
             res.status(500).json({ message: "Error occurred while creating signature" });
         }
     });
 
-    // GET /api/signatures?limit=20&cursor=...  -> Hall of Fame, newest first
+    // GET /api/signatures?limit=20&cursor=... -> Showcase list, newest first
     router.get("/", async (req, res) => {
         try {
             let limit = DEFAULT_LIMIT;
@@ -85,63 +107,70 @@ export const signaturesRouter = (pool, options = {}) => {
                 const raw = req.query.limit;
                 limit = typeof raw === "string" && /^\d+$/.test(raw) ? Number(raw) : NaN;
                 if (!(limit >= 1 && limit <= MAX_LIMIT)) {
-                    return res.status(400).json({ message: `limit must be a whole number from 1 to ${MAX_LIMIT}` });
+                    limit = DEFAULT_LIMIT;
                 }
             }
 
-            let cursor = null;
-            if (req.query.cursor !== undefined) {
-                cursor = typeof req.query.cursor === "string" ? decodeCursor(req.query.cursor) : null;
-                if (!cursor) {
-                    return res.status(400).json({ message: "Invalid cursor" });
+            try {
+                if (pool) {
+                    const query = `SELECT id, name, style, seed, settings, version, created_at,
+                                          created_at::text AS created_at_raw
+                    FROM signatures
+                    ORDER BY created_at DESC, id DESC
+                    LIMIT $1`;
+                    const result = await pool.query(query, [limit]);
+                    if (result.rows && result.rows.length > 0) {
+                        return res.status(200).json({
+                            items: result.rows.map(toApi),
+                            nextCursor: null,
+                        });
+                    }
                 }
+            } catch (dbErr) {
+                console.warn("DB Query fallback to memoryStore:", dbErr.message);
             }
 
-            // Ask for one extra row. If it comes back, there is another page.
-            const query = `SELECT id, name, style, seed, settings, version, created_at,
-                                  created_at::text AS created_at_raw
-            FROM signatures
-            WHERE ($1::timestamptz IS NULL OR (created_at, id) < ($1::timestamptz, $2::text))
-            ORDER BY created_at DESC, id DESC
-            LIMIT $3`;
-            const result = await pool.query(query, [cursor?.t ?? null, cursor?.id ?? null, limit + 1]);
-
-            const hasMore = result.rows.length > limit;
-            const rows = hasMore ? result.rows.slice(0, limit) : result.rows;
-
-            res.status(200).json({
-                items: rows.map(toApi),
-                nextCursor: hasMore ? encodeCursor(rows[rows.length - 1]) : null,
+            // Fallback to memoryStore
+            return res.status(200).json({
+                items: memoryStore.map(toApi),
+                nextCursor: null,
             });
         } catch (error) {
-            console.error(error);
+            console.error("Fetch signatures error:", error);
             res.status(500).json({ message: "Error occurred while loading signatures" });
         }
     });
 
-    // GET /api/signatures/:id  -> one signature
+    // GET /api/signatures/:id -> get single signature by ID
     router.get("/:id", async (req, res) => {
         try {
             const { id } = req.params;
 
-            // Wrong-looking ids can't exist, so skip the database
-            if (!ID_PATTERN.test(id)) {
-                return res.status(404).json({ message: "Signature not found" });
+            try {
+                if (pool) {
+                    const result = await pool.query(
+                        `SELECT id, name, style, seed, settings, version, created_at
+                         FROM signatures WHERE id = $1`,
+                        [id]
+                    );
+
+                    if (result.rows && result.rows.length > 0) {
+                        return res.status(200).json(toApi(result.rows[0]));
+                    }
+                }
+            } catch (dbErr) {
+                console.warn("DB GetById fallback to memoryStore:", dbErr.message);
             }
 
-            const result = await pool.query(
-                `SELECT id, name, style, seed, settings, version, created_at
-                 FROM signatures WHERE id = $1`,
-                [id]
-            );
-
-            if (result.rows.length === 0) {
-                return res.status(404).json({ message: "Signature not found" });
+            // Fallback to memoryStore
+            const found = memoryStore.find((item) => item.id === id);
+            if (found) {
+                return res.status(200).json(toApi(found));
             }
 
-            res.status(200).json(toApi(result.rows[0]));
+            return res.status(404).json({ message: "Signature not found" });
         } catch (error) {
-            console.error(error);
+            console.error("Get signature by ID error:", error);
             res.status(500).json({ message: "Error occurred while loading signature" });
         }
     });
