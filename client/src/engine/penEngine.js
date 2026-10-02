@@ -1,22 +1,32 @@
-/**
- * Generates signature data structure for text and style.
- */
-export function generateSignatureStrokes(name, style = 'scripts', seed = 42, settings = {}) {
-  const text = (name || 'your name').trim() || 'your name';
-  const fontStyle = ['scripts', 'scriptc', 'timesi', 'futural', 'gothiceng'].includes(style) ? style : 'scripts';
+export const FONT_TILES = [
+  { id: 'brittany', label: 'Brittany Signature', font: '"Great Vibes", cursive' },
+  { id: 'signatura', label: 'Signatura Monoline', font: '"Sacramento", cursive' },
+  { id: 'delafield', label: 'Mrs Saint Delafield', font: '"Mrs Saint Delafield", cursive' },
+  { id: 'allura', label: 'Allura', font: '"Allura", cursive' },
+  { id: 'greatvibes', label: 'Great Vibes', font: '"Great Vibes", cursive' },
+  { id: 'sacramento', label: 'Sacramento', font: '"Sacramento", cursive' },
+  { id: 'parisienne', label: 'Parisienne', font: '"Parisienne", cursive' },
+];
 
+export const INK_SWATCHES = [
+  { id: 'white', hex: '#FFFFFF', label: 'Pure White' },
+  { id: 'lightgray', hex: '#D4D4D4', label: 'Light Gray' },
+  { id: 'midgray', hex: '#888888', label: 'Mid Gray' },
+];
+
+export function generateSignatureStrokes(name, style = 'brittany', seed = 42, settings = {}) {
+  const text = (name || '').trim() || 'your name';
   return {
     name: text,
     text,
-    style: fontStyle,
+    style,
     seed,
     settings,
-    bounds: { width: 400, height: 160, minX: 0, minY: 0, maxX: 400, maxY: 160 },
   };
 }
 
 /**
- * Draws animated standard handwritten signature onto HTML5 Canvas.
+ * Draws animated handwriting stroke onto HTML5 Canvas.
  * progress is a float between 0.0 and 1.0.
  */
 export function drawSignatureToCanvas(ctx, signatureData, progress, settings = {}) {
@@ -25,26 +35,34 @@ export function drawSignatureToCanvas(ctx, signatureData, progress, settings = {
   const width = ctx.canvas.width;
   const height = ctx.canvas.height;
 
-  ctx.clearRect(0, 0, width, height);
+  // Pure dark background (#1A1A1A preview stage or #111111 card surface or transparent)
+  const bgMode = settings.bg || 'dark';
+  if (bgMode === 'transparent') {
+    ctx.clearRect(0, 0, width, height);
+  } else if (bgMode === 'card') {
+    ctx.fillStyle = '#111111';
+    ctx.fillRect(0, 0, width, height);
+  } else {
+    ctx.fillStyle = '#1A1A1A';
+    ctx.fillRect(0, 0, width, height);
+  }
 
-  const nameText = (signatureData.text || signatureData.name || 'your name').trim() || 'your name';
-  const style = signatureData.style || 'scripts';
+  const nameText = (signatureData.text || signatureData.name || 'your name').trim();
+  const styleId = signatureData.style || 'brittany';
 
-  // Map font style to standard elegant handwriting font families
-  let fontFamily = '"Great Vibes", "Alex Brush", cursive';
-  if (style === 'scriptc') fontFamily = '"Dancing Script", "Great Vibes", cursive';
-  else if (style === 'timesi') fontFamily = '"Alex Brush", "Dancing Script", cursive';
-  else if (style === 'futural') fontFamily = '"Sacramento", "Great Vibes", cursive';
-  else if (style === 'gothiceng') fontFamily = '"MonteCarlo", "Alex Brush", cursive';
+  const fontObj = FONT_TILES.find((f) => f.id === styleId) || FONT_TILES[0];
+  const fontFamily = fontObj.font;
 
-  const inkColor = settings.ink || '#ffffff';
+  const inkColor = settings.ink || '#FFFFFF';
+  const penThickness = settings.pen || 1.8;
 
-  // Calculate responsive font size based on text length and canvas dimensions
+  // Auto-calculate font size dynamically
   const charCount = Math.max(nameText.length, 5);
-  const targetFontSize = Math.min((width * 0.85) / (charCount * 0.52), height * 0.42);
-  const fontSize = Math.max(24, Math.min(84, targetFontSize));
+  const targetFontSize = Math.min((width * 0.82) / (charCount * 0.46), height * 0.48);
+  const fontSize = Math.max(26, Math.min(88, targetFontSize));
 
   ctx.save();
+
   ctx.font = `400 ${fontSize}px ${fontFamily}`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -53,10 +71,10 @@ export function drawSignatureToCanvas(ctx, signatureData, progress, settings = {
   const textWidth = Math.max(textMetrics.width, 80);
 
   const centerX = width / 2;
-  const centerY = height / 2 - fontSize * 0.05;
+  const centerY = height / 2;
 
-  // Progressive left-to-right handwriting reveal mask
-  const padding = 50;
+  // Progressive reveal mask along X axis in stroke order
+  const padding = 60;
   const startX = centerX - textWidth / 2 - padding;
   const totalRevealWidth = textWidth + padding * 2;
   const currentClipWidth = totalRevealWidth * progress;
@@ -65,45 +83,13 @@ export function drawSignatureToCanvas(ctx, signatureData, progress, settings = {
   ctx.rect(startX, 0, currentClipWidth, height);
   ctx.clip();
 
-  // Draw smooth liquid ink signature with subtle depth glow
-  ctx.shadowColor = inkColor;
-  ctx.shadowBlur = 4;
+  // Clean, crisp single-stroke handwriting in white/gray
   ctx.fillStyle = inkColor;
   ctx.strokeStyle = inkColor;
-  ctx.lineWidth = Math.max(1.2, fontSize * 0.022);
+  ctx.lineWidth = Math.max(1, penThickness * (fontSize / 45));
 
   ctx.fillText(nameText, centerX, centerY);
   ctx.strokeText(nameText, centerX, centerY);
 
-  // Decorative Underline Swash
-  if (settings.flo !== false && progress > 0.35) {
-    const swashProgress = Math.min(1.0, (progress - 0.35) / 0.65);
-    const swashY = centerY + fontSize * 0.42;
-    const sX1 = centerX - textWidth * 0.48;
-    const sX2 = centerX + textWidth * 0.48;
-    const currentSX = sX1 + (sX2 - sX1) * swashProgress;
-
-    ctx.beginPath();
-    ctx.lineWidth = Math.max(1.5, fontSize * 0.024);
-    ctx.moveTo(sX1, swashY);
-    ctx.quadraticCurveTo(centerX, swashY + fontSize * 0.12, currentSX, swashY);
-    ctx.stroke();
-  }
-
   ctx.restore();
-
-  // Glowing Pen Nib Effect at active leading edge
-  if (progress > 0.02 && progress < 0.98) {
-    const headX = startX + currentClipWidth;
-    const headY = centerY + Math.sin(progress * Math.PI * 3) * (fontSize * 0.08);
-
-    ctx.save();
-    ctx.shadowColor = inkColor;
-    ctx.shadowBlur = 14;
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.arc(headX, headY, Math.max(3, fontSize * 0.035), 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  }
 }

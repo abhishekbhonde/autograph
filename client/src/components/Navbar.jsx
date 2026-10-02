@@ -1,41 +1,45 @@
 import React from 'react';
+import { Plus } from 'lucide-react';
 
 export default function Navbar({ activeTab, setActiveTab }) {
   return (
-    <header className="sticky top-0 z-40 w-full bg-black/90 border-b border-white/10 px-6 py-4 backdrop-blur-md">
-      <div className="max-w-6xl mx-auto flex items-center justify-between">
-        {/* Brand Logo */}
-        <button
-          onClick={() => setActiveTab('showcase')}
-          className="text-lg font-bold text-white tracking-tight hover:opacity-90 transition-opacity"
-        >
-          autograph
-        </button>
-
+    <header className="sticky top-0 z-40 w-full h-[64px] bg-[#000000] border-b border-[var(--line)] px-6 font-ui">
+      <div className="max-w-[1120px] h-full mx-auto flex items-center justify-between">
         {/* Navigation Links */}
-        <nav className="flex items-center gap-6 text-sm font-medium">
+        <nav className="flex items-center gap-6 text-sm">
           <button
-            onClick={() => setActiveTab('showcase')}
-            className={`transition-colors ${
-              activeTab === 'showcase'
-                ? 'text-white font-semibold'
-                : 'text-slate-400 hover:text-white'
+            onClick={() => setActiveTab('home')}
+            className={`transition-colors duration-150 cursor-pointer ${
+              activeTab === 'home'
+                ? 'text-white font-medium'
+                : 'text-[var(--text-faint)] hover:text-white'
             }`}
           >
             Showcase
           </button>
 
           <button
-            onClick={() => setActiveTab('create')}
-            className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
-              activeTab === 'create'
-                ? 'bg-white text-black border-white'
-                : 'bg-transparent text-slate-300 border-white/20 hover:border-white hover:text-white'
+            onClick={() => setActiveTab('studio')}
+            className={`transition-colors duration-150 cursor-pointer ${
+              activeTab === 'studio'
+                ? 'text-white font-medium'
+                : 'text-[var(--text-faint)] hover:text-white'
             }`}
           >
             Create
           </button>
         </nav>
+
+        {/* Right: Primary Create Button */}
+        <div>
+          <button
+            onClick={() => setActiveTab('studio')}
+            className="btn-primary px-3.5 py-1.5 text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-md hover:opacity-90 transition-all"
+          >
+            <Plus className="w-3.5 h-3.5 text-black stroke-[3]" />
+            <span>Create</span>
+          </button>
+        </div>
       </div>
     </header>
   );

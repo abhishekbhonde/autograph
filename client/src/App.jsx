@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
-import HeroBanner from './components/HeroBanner';
 import HeroStudio from './components/HeroStudio';
 import HallOfFame from './components/HallOfFame';
 import ShareModal from './components/ShareModal';
@@ -9,7 +8,7 @@ import Footer from './components/Footer';
 import { getSignatureById } from './services/api';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('showcase');
+  const [activeTab, setActiveTab] = useState('home');
   const [toast, setToast] = useState(null);
   const [selectedSignature, setSelectedSignature] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -18,7 +17,7 @@ export default function App() {
     setToast({ message, type });
     setTimeout(() => {
       setToast(null);
-    }, 3200);
+    }, 3000);
   };
 
   // Check URL query param ?id=... on mount
@@ -32,38 +31,39 @@ export default function App() {
           setSelectedSignature(data);
         })
         .catch(() => {
-          showToast('Signature not found or invalid link', 'error');
+          showToast('Signature not found', 'error');
         });
     }
   }, []);
 
   const handleSignaturePublished = (newId) => {
     setRefreshKey((prev) => prev + 1);
-    getSignatureById(newId)
-      .then((data) => {
-        setSelectedSignature(data);
-        setActiveTab('showcase');
-      })
-      .catch(() => {});
+    setActiveTab('home'); // Instantly switch to Showcase view when published/downloaded
+    if (newId) {
+      getSignatureById(newId)
+        .then((data) => {
+          setSelectedSignature(data);
+        })
+        .catch(() => {});
+    }
   };
 
   return (
-    <div className="min-h-screen bg-black text-white relative flex flex-col font-sans selection:bg-white/20 selection:text-white">
-      {/* Header Navbar */}
+    <div className="min-h-screen bg-[#000000] text-white relative flex flex-col font-ui selection:bg-white/20 selection:text-white">
+      {/* GLOBAL NAV WITH INSTANT CREATE ACTION */}
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      {/* Page Content */}
-      <main className="flex-1 relative z-10">
-        {activeTab === 'showcase' ? (
-          <>
-            <HeroBanner onCreateClick={() => setActiveTab('create')} />
-            <HallOfFame
-              onSelectSignature={setSelectedSignature}
-              showToast={showToast}
-              refreshTrigger={refreshKey}
-            />
-          </>
+      {/* MAIN CONTENT AREA */}
+      <main className="flex-1 relative z-10 pb-12">
+        {activeTab === 'home' ? (
+          /* MINIMAL SHOWCASE DASHBOARD VIEW */
+          <HallOfFame
+            onSelectSignature={setSelectedSignature}
+            onOpenCreate={() => setActiveTab('studio')}
+            refreshTrigger={refreshKey}
+          />
         ) : (
+          /* CREATE STUDIO VIEW */
           <HeroStudio
             onSignaturePublished={handleSignaturePublished}
             showToast={showToast}
@@ -71,7 +71,7 @@ export default function App() {
         )}
       </main>
 
-      {/* Share / Spotlight Modal */}
+      {/* SHOWCASE MODAL */}
       {selectedSignature && (
         <ShareModal
           signature={selectedSignature}
@@ -85,10 +85,10 @@ export default function App() {
         />
       )}
 
-      {/* Toast Notification */}
-      <Toast toast={toast} onClose={() => setToast(null)} />
+      {/* TOAST NOTIFICATION */}
+      <Toast toast={toast} />
 
-      {/* Footer */}
+      {/* FOOTER */}
       <Footer />
     </div>
   );

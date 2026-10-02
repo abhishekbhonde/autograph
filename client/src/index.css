@@ -1,10 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Inter:wght@300;400;500;600;700&family=MonteCarlo&family=Outfit:wght@400;500;600;700;800&family=Sacramento&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Allura&family=Brittany+Signature&family=Great+Vibes&family=Herr+Von+Muellerhoff&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Mrs+Saint+Delafield&family=Parisienne&family=Sacramento&display=swap');
 @import "tailwindcss";
 
 :root {
-  --color-bg: #000000;
-  --color-card: #111111;
-  --color-card-border: rgba(255, 255, 255, 0.1);
+  --bg: #000000;
+  --surface: #111111;
+  --surface-2: #1A1A1A;
+  --input: #0A0A0A;
+  --line: rgba(255, 255, 255, 0.10);
+  --text: #FFFFFF;
+  --text-dim: #A1A1A1;
+  --text-faint: #6E6E6E;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   color-scheme: dark;
 }
@@ -12,54 +17,109 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: #000000;
-  color: #ffffff;
+  background-color: var(--bg);
+  color: var(--text);
   overflow-x: hidden;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Custom Scrollbar */
+/* Custom Minimal Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #000000;
+  background: var(--bg);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: #333333;
   border-radius: 9999px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.4);
+
+/* Strict Monochrome Cards and Panels */
+.mono-card {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  transition: border-color 0.2s ease-out;
 }
 
-/* Minimal Card Utility */
-.autograph-card {
-  background-color: #111111;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 1rem;
-  transition: all 0.25s ease-in-out;
-}
-
-.autograph-card:hover {
+.mono-card:hover {
   border-color: rgba(255, 255, 255, 0.25);
 }
 
-/* Cursive Font Classes */
-.font-signature-logo {
-  font-family: 'Great Vibes', cursive;
+.mono-stage {
+  background-color: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 22px;
 }
-.font-signature-alex {
-  font-family: 'Alex Brush', cursive;
+
+.mono-input {
+  background-color: var(--input);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--text);
+  transition: border-color 0.15s ease-out, box-shadow 0.15s ease-out;
 }
-.font-signature-dancing {
-  font-family: 'Dancing Script', cursive;
+
+.mono-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
 }
-.font-signature-sacramento {
-  font-family: 'Sacramento', cursive;
+
+/* Buttons */
+.btn-primary {
+  background-color: #FFFFFF;
+  color: #000000;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: opacity 0.15s ease-out;
 }
-.font-signature-montecarlo {
-  font-family: 'MonteCarlo', cursive;
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-secondary {
+  background-color: transparent;
+  border: 1px solid var(--line);
+  color: #FFFFFF;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: border-color 0.15s ease-out, background-color 0.15s ease-out;
+}
+.btn-secondary:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* Typography Utility Classes */
+.font-script {
+  font-family: 'Mrs Saint Delafield', 'Herr Von Muellerhoff', 'Great Vibes', cursive;
+  font-weight: 300;
+}
+
+.font-ui {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.font-mono-label {
+  font-family: 'Inter', system-ui, sans-serif;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  font-weight: 500;
+}
+
+/* Shimmer animation for skeleton cards */
+@keyframes grayShimmer {
+  0% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+  100% { opacity: 0.3; }
+}
+
+.animate-shimmer {
+  animation: grayShimmer 1.6s ease-in-out infinite;
 }

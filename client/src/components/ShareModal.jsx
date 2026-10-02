@@ -1,5 +1,5 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { X, Play, Link2, Download, Check, Sparkles } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { X, RotateCcw, Link2, Download, Check } from 'lucide-react';
 import SignatureCanvas from './SignatureCanvas';
 import { downloadSVG, downloadPNG } from '../utils/exportUtils';
 
@@ -14,7 +14,7 @@ export default function ShareModal({ signature, onClose, showToast }) {
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shareUrl);
     setCopied(true);
-    if (showToast) showToast('Signature URL copied to clipboard! 📋');
+    if (showToast) showToast('Link copied to clipboard', 'success');
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -26,104 +26,107 @@ export default function ShareModal({ signature, onClose, showToast }) {
 
   const handleDownloadSVG = () => {
     downloadSVG(signature.name, signature.style, signature.seed, signature.settings);
-    if (showToast) showToast('Downloaded SVG! ✨');
+    if (showToast) showToast('Downloaded SVG', 'success');
   };
 
   const handleDownloadPNG = () => {
     if (canvasRef.current) {
       downloadPNG(canvasRef.current.getCanvas(), signature.name);
-      if (showToast) showToast('Downloaded PNG! 🖼️');
+      if (showToast) showToast('Downloaded PNG', 'success');
     }
   };
 
+  const authorName = signature.authorName || signature.name || 'Anonymous';
+  const authorHandle = signature.authorHandle || authorName.toLowerCase().replace(/[^a-z0-9]/g, '');
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
-      <div className="glass-card rounded-3xl p-6 sm:p-8 max-w-xl w-full border border-white/15 relative space-y-6 shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-fadeIn font-ui">
+      <div className="mono-card p-6 max-w-lg w-full relative space-y-6 bg-[#111111] text-left border border-[var(--line)]">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-all"
+          className="absolute right-4 top-4 p-2 rounded-full border border-[var(--line)] bg-[#0A0A0A] text-[var(--text-faint)] hover:text-white transition-colors cursor-pointer"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
 
         {/* Modal Header */}
         <div className="space-y-1">
-          <div className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-400 uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Signature Spotlight</span>
-          </div>
-          <h3 className="text-2xl font-extrabold text-white font-['Outfit']">
+          <h3 className="text-2xl font-medium text-white">
             {signature.name}
           </h3>
-          <p className="text-slate-400 text-xs font-mono">
-            Style: {signature.style} • ID: #{signature.id}
+          <p className="text-[var(--text-dim)] text-xs">
+            By <span className="text-white">{authorName}</span> (@{authorHandle}) • Font: {signature.style}
           </p>
         </div>
 
         {/* Stage Preview */}
-        <div className="bg-slate-950/70 border border-white/10 rounded-2xl p-4 flex items-center justify-center relative overflow-hidden">
+        <div className="mono-stage p-4 flex items-center justify-center relative overflow-hidden bg-[#1A1A1A] h-[220px]">
           <SignatureCanvas
             ref={canvasRef}
             name={signature.name}
             style={signature.style}
             seed={signature.seed}
-            settings={signature.settings}
+            settings={{
+              ...signature.settings,
+              ink: '#FFFFFF',
+              bg: 'dark',
+            }}
             autoPlay={true}
-            height={220}
+            height={200}
           />
         </div>
 
         {/* Copy Share Link Input */}
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-            Shareable Signature Link
+        <div className="space-y-2">
+          <label className="block font-mono-label">
+            PERMALINK
           </label>
           <div className="flex gap-2">
             <input
               type="text"
               readOnly
               value={shareUrl}
-              className="w-full bg-slate-900 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs font-mono text-slate-300 focus:outline-none"
+              className="w-full mono-input px-3.5 py-2 text-xs font-mono text-white"
             />
             <button
               onClick={handleCopyLink}
-              className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all whitespace-nowrap ${
+              className={`px-4 py-2 text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
                 copied
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                  ? 'btn-primary bg-white text-black'
+                  : 'btn-secondary'
               }`}
             >
-              {copied ? <Check className="w-4 h-4" /> : <Link2 className="w-4 h-4" />}
+              {copied ? <Check className="w-3.5 h-3.5" /> : <Link2 className="w-3.5 h-3.5" />}
               <span>{copied ? 'Copied' : 'Copy'}</span>
             </button>
           </div>
         </div>
 
         {/* Action Toolbar */}
-        <div className="flex items-center justify-between pt-2 border-t border-white/10">
+        <div className="flex items-center justify-between pt-3 border-t border-[var(--line)]">
           <button
             onClick={handleReplay}
-            className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center gap-2 transition-all"
+            className="btn-secondary px-4 py-2 text-xs flex items-center gap-2 cursor-pointer"
           >
-            <Play className="w-3.5 h-3.5 text-indigo-400 fill-indigo-400" />
+            <RotateCcw className="w-3.5 h-3.5 text-white" />
             <span>Replay</span>
           </button>
 
           <div className="flex gap-2">
             <button
               onClick={handleDownloadSVG}
-              className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5"
+              className="btn-secondary px-3.5 py-2 text-xs cursor-pointer"
             >
-              <Download className="w-3.5 h-3.5 text-cyan-400" />
-              <span>SVG</span>
+              <Download className="w-3.5 h-3.5 text-white inline mr-1" />
+              SVG
             </button>
             <button
               onClick={handleDownloadPNG}
-              className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5"
+              className="btn-primary px-3.5 py-2 text-xs font-medium cursor-pointer"
             >
-              <Download className="w-3.5 h-3.5 text-purple-400" />
-              <span>PNG</span>
+              <Download className="w-3.5 h-3.5 text-black inline mr-1" />
+              PNG
             </button>
           </div>
         </div>
