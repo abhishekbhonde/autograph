@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
+import HeroBanner from './components/HeroBanner';
 import HeroStudio from './components/HeroStudio';
 import HallOfFame from './components/HallOfFame';
 import ShareModal from './components/ShareModal';
@@ -56,12 +57,17 @@ export default function App() {
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 relative z-10 pb-12">
         {activeTab === 'home' ? (
-          /* MINIMAL SHOWCASE DASHBOARD VIEW */
-          <HallOfFame
-            onSelectSignature={setSelectedSignature}
-            onOpenCreate={() => setActiveTab('studio')}
-            refreshTrigger={refreshKey}
-          />
+          <>
+            {/* COMPACT HERO SECTION WITH ANIMATED DEMO STAGE */}
+            <HeroBanner onOpenStudio={() => setActiveTab('studio')} />
+
+            {/* MINIMAL SHOWCASE DASHBOARD VIEW */}
+            <HallOfFame
+              onSelectSignature={setSelectedSignature}
+              onOpenCreate={() => setActiveTab('studio')}
+              refreshTrigger={refreshKey}
+            />
+          </>
         ) : (
           /* CREATE STUDIO VIEW */
           <HeroStudio

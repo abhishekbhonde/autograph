@@ -1,92 +1,69 @@
-import React, { useRef } from 'react';
-import { ArrowRight, Sparkles, Layers, Video, ShieldCheck } from 'lucide-react';
+import React, { useRef, useState, useEffect } from 'react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import SignatureCanvas from './SignatureCanvas';
 
-export default function HeroBanner({ onOpenStudio, onBrowseWall }) {
+const HERO_SAMPLES = [
+  { name: 'Sign it. Share it.', style: 'delafield' },
+  { name: 'Arthur Pendelton', style: 'signatura' },
+  { name: 'Genevieve Dupré', style: 'brittany' },
+];
+
+export default function HeroBanner({ onOpenStudio }) {
   const canvasRef = useRef(null);
+  const [sampleIndex, setSampleIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSampleIndex((prev) => (prev + 1) % HERO_SAMPLES.length);
+    }, 4500);
+    return () => clearInterval(interval);
+  }, []);
+
+  const currentSample = HERO_SAMPLES[sampleIndex];
 
   return (
-    <section className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto text-left font-ui">
-      <div className="space-y-8 max-w-[720px]">
-        {/* Top Product Pill Badge */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-[var(--line)] bg-[#111111] text-[11px] font-mono-label text-[var(--text-dim)] select-none">
-          <Sparkles className="w-3.5 h-3.5 text-white" />
-          <span>ANIMATED HANDWRITING ENGINE</span>
-        </div>
-
-        {/* Hero Title */}
-        <div className="space-y-3">
-          <h1 className="text-4xl sm:text-6xl font-medium text-white tracking-tight leading-[1.1]">
-            It's a whole new <span className="font-script text-white text-5xl sm:text-7xl block sm:inline">signature.</span>
-          </h1>
-
-          {/* Self-Writing Script Preview Banner */}
-          <div className="h-[80px] w-full flex items-center pt-2">
-            <SignatureCanvas
-              ref={canvasRef}
-              name="scribble & co."
-              style="delafield"
-              seed={1}
-              settings={{ ink: '#FFFFFF', bg: 'transparent', pen: 1.5 }}
-              autoPlay={true}
-              height={80}
-            />
+    <section className="pt-8 pb-4 px-6 max-w-[1120px] mx-auto font-ui text-left">
+      <div className="mono-card p-6 sm:p-8 bg-[#111111] border border-[var(--line)] rounded-[22px] flex flex-col md:flex-row items-center justify-between gap-8">
+        {/* Left Column: Title, Subtitle & Action */}
+        <div className="space-y-4 max-w-[540px]">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[var(--line)] bg-[#1A1A1A] text-[11px] font-mono-label text-[var(--text-dim)]">
+            <Sparkles className="w-3.5 h-3.5 text-white" />
+            <span>ANIMATED SIGNATURE STUDIO</span>
           </div>
 
-          {/* Subtitle Body Copy */}
-          <p className="text-base sm:text-lg text-[var(--text-dim)] font-ui max-w-[620px] leading-relaxed pt-1">
-            Create your own stroke-by-stroke animated signature in seconds. Preview in real time, export crisp PNG, SVG, or 60fps WebM video, and publish to the showcase.
-          </p>
-        </div>
-
-        {/* Dual Actions */}
-        <div className="flex flex-wrap items-center gap-4 pt-2">
-          <button
-            onClick={onOpenStudio}
-            className="btn-primary px-6 py-3 text-sm font-medium flex items-center gap-2 cursor-pointer shadow-lg hover:opacity-90 transition-all"
-          >
-            <span>Create your signature</span>
-            <ArrowRight className="w-4 h-4 text-black" />
-          </button>
-
-          <button
-            onClick={onBrowseWall}
-            className="btn-secondary px-5 py-3 text-sm font-medium flex items-center gap-2 cursor-pointer"
-          >
-            <span>Explore showcase</span>
-          </button>
-        </div>
-
-        {/* Product Feature Highlights Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-10 border-t border-[var(--line)]">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-mono-label text-white">
-              <Layers className="w-3.5 h-3.5 text-[var(--text-faint)]" />
-              <span>01 / VECTOR PATHS</span>
-            </div>
-            <p className="text-xs text-[var(--text-dim)]">
-              Resolution-independent SVG vector path exports.
+          <div className="space-y-2">
+            <h1 className="text-2xl sm:text-4xl font-medium text-white tracking-tight">
+              Sign it. Share it.
+            </h1>
+            <p className="text-sm text-[var(--text-dim)] leading-relaxed">
+              Type your name, watch it get handwritten stroke-by-stroke, customize font & speed, and export as PNG, SVG, or video.
             </p>
           </div>
 
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-mono-label text-white">
-              <Video className="w-3.5 h-3.5 text-[var(--text-faint)]" />
-              <span>02 / 60FPS VIDEO</span>
-            </div>
-            <p className="text-xs text-[var(--text-dim)]">
-              Record high frame-rate WebM animation clips.
-            </p>
+          <div className="pt-1">
+            <button
+              onClick={onOpenStudio}
+              className="btn-primary px-5 py-2.5 text-xs font-medium inline-flex items-center gap-2 cursor-pointer shadow-md hover:opacity-90 transition-all"
+            >
+              <span>Create signature</span>
+              <ArrowRight className="w-3.5 h-3.5 text-black" />
+            </button>
           </div>
+        </div>
 
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-mono-label text-white">
-              <ShieldCheck className="w-3.5 h-3.5 text-[var(--text-faint)]" />
-              <span>03 / PERMALINKS</span>
-            </div>
-            <p className="text-xs text-[var(--text-dim)]">
-              Shareable permalinks for every signature.
-            </p>
+        {/* Right Column: Live Animated Signature Demo Stage */}
+        <div className="w-full md:w-[420px] h-[150px] mono-stage bg-[#1A1A1A] rounded-[16px] border border-[var(--line)] flex items-center justify-center relative p-4 shrink-0 overflow-hidden">
+          <SignatureCanvas
+            ref={canvasRef}
+            name={currentSample.name}
+            style={currentSample.style}
+            seed={1234}
+            settings={{ ink: '#FFFFFF', bg: 'dark', pen: 1.8 }}
+            autoPlay={true}
+            height={130}
+          />
+          <div className="absolute bottom-2 right-3 text-[10px] font-mono-label text-[var(--text-faint)]">
+            {currentSample.style}
           </div>
         </div>
       </div>
