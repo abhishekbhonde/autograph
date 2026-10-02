@@ -3,11 +3,11 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 import SignatureCanvas from './SignatureCanvas';
 
 const HERO_SAMPLES = [
-  { name: 'my signature', style: 'delafield' },
-  { name: 'my signature', style: 'brittany' },
-  { name: 'my signature', style: 'signatura' },
-  { name: 'my signature', style: 'allura' },
-  { name: 'my signature', style: 'sacramento' },
+  { name: 'Abhishek Bhonde', style: 'delafield' },
+  { name: 'Abhishek Bhonde', style: 'brittany' },
+  { name: 'Abhishek Bhonde', style: 'signatura' },
+  { name: 'Abhishek Bhonde', style: 'allura' },
+  { name: 'Abhishek Bhonde', style: 'sacramento' },
 ];
 
 export default function HeroBanner({ onOpenStudio }) {
@@ -53,7 +53,7 @@ export default function HeroBanner({ onOpenStudio }) {
           </div>
         </div>
 
-        {/* Right Column: Live Animated Signature Demo Stage displaying "my signature" */}
+        {/* Right Column: Live Animated Signature Demo Stage displaying "Abhishek Bhonde" */}
         <div className="w-full md:w-[380px] h-[140px] mono-stage bg-[#1A1A1A] rounded-[14px] border border-[var(--line)] flex items-center justify-center relative p-3 shrink-0 overflow-hidden">
           <SignatureCanvas
             ref={canvasRef}
