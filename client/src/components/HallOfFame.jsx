@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Plus, Sparkles } from 'lucide-react';
+import { RefreshCw, Plus, Sparkles, ChevronDown } from 'lucide-react';
 import SignatureCard from './SignatureCard';
 import { fetchSignatures } from '../services/api';
 
@@ -9,16 +9,19 @@ const FILTER_TABS = [
   { id: 'popular', label: 'Popular' },
 ];
 
+const INITIAL_LIMIT = 10;
+
 export default function HallOfFame({ onSelectSignature, onOpenCreate, refreshTrigger }) {
   const [items, setItems] = useState([]);
   const [filter, setFilter] = useState('all');
+  const [visibleCount, setVisibleCount] = useState(INITIAL_LIMIT);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const loadSignatures = async () => {
     try {
       setIsLoading(true);
-      const res = await fetchSignatures(30, null);
+      const res = await fetchSignatures(50, null);
       let list = res.items || [];
       if (filter === 'popular') {
         list = [...list].sort((a, b) => (b.likes || 0) - (a.likes || 0));
@@ -35,6 +38,16 @@ export default function HallOfFame({ onSelectSignature, onOpenCreate, refreshTri
   useEffect(() => {
     loadSignatures();
   }, [refreshTrigger, filter]);
+
+  const displayedItems = React.useMemo(() => {
+    return items.slice(0, visibleCount);
+  }, [items, visibleCount]);
+
+  const hasMore = items.length > visibleCount;
+
+  const handleShowMore = () => {
+    setVisibleCount((prev) => prev + 10);
+  };
 
   return (
     <section className="pt-8 pb-16 px-6 max-w-[1120px] mx-auto space-y-6 font-ui">
@@ -61,7 +74,10 @@ export default function HallOfFame({ onSelectSignature, onOpenCreate, refreshTri
             {FILTER_TABS.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setFilter(tab.id)}
+                onClick={() => {
+                  setFilter(tab.id);
+                  setVisibleCount(INITIAL_LIMIT);
+                }}
                 className={`px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer ${
                   filter === tab.id
                     ? 'bg-white text-black font-semibold'
@@ -132,14 +148,29 @@ export default function HallOfFame({ onSelectSignature, onOpenCreate, refreshTri
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
-          {items.map((item) => (
-            <SignatureCard
-              key={item.id}
-              item={item}
-              onSelect={onSelectSignature}
-            />
-          ))}
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+            {displayedItems.map((item) => (
+              <SignatureCard
+                key={item.id}
+                item={item}
+                onSelect={onSelectSignature}
+              />
+            ))}
+          </div>
+
+          {/* Show More Pagination Button */}
+          {hasMore && (
+            <div className="pt-4 text-center">
+              <button
+                onClick={handleShowMore}
+                className="btn-secondary px-6 py-2.5 text-xs font-medium inline-flex items-center gap-2 cursor-pointer hover:bg-white/5 transition-all"
+              >
+                <span>Show more ({items.length - visibleCount} remaining)</span>
+                <ChevronDown className="w-3.5 h-3.5 text-white" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </section>
