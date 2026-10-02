@@ -44,10 +44,10 @@ export default function SignatureCard({ item, onSelect }) {
     <div
       ref={cardRef}
       onClick={() => onSelect && onSelect(item)}
-      className="mono-card flex flex-col justify-between h-[360px] overflow-hidden group cursor-pointer"
+      className="mono-card flex flex-col justify-between h-[210px] rounded-[16px] overflow-hidden group cursor-pointer border border-[var(--line)] bg-[#111111] hover:border-white/20 transition-all duration-200"
     >
-      {/* Top Area (~280px tall) with signature centered in white */}
-      <div className="h-[280px] w-full flex items-center justify-center relative p-4 bg-[#111111]">
+      {/* Top Area (150px tall) with signature centered in white */}
+      <div className="h-[150px] w-full flex items-center justify-center relative p-3 bg-[#111111]">
         <SignatureCanvas
           ref={canvasRef}
           name={item.name}
@@ -59,45 +59,45 @@ export default function SignatureCard({ item, onSelect }) {
             bg: 'card',
           }}
           autoPlay={isVisible}
-          height={220}
+          height={135}
         />
       </div>
 
-      {/* 1px Hairline Divider */}
-      <div className="border-t border-[var(--line)] px-4 py-3 bg-[#111111] flex items-center justify-between">
-        {/* Left: 36px circular avatar + username with @handle */}
-        <div className="flex items-center gap-3 truncate pr-2">
-          <div className="w-9 h-9 rounded-full bg-[#1A1A1A] border border-[var(--line)] flex items-center justify-center text-sm font-semibold text-white shrink-0">
+      {/* 1px Hairline Divider & Footer Row */}
+      <div className="border-t border-[var(--line)] px-3.5 py-2.5 bg-[#111111] flex items-center justify-between">
+        {/* Left: 28px circular avatar + username with @handle */}
+        <div className="flex items-center gap-2.5 truncate pr-2">
+          <div className="w-7 h-7 rounded-full bg-[#1A1A1A] border border-[var(--line)] flex items-center justify-center text-xs font-medium text-white shrink-0">
             {avatarChar}
           </div>
 
           <div className="truncate">
-            <div className="text-sm font-ui font-medium text-white truncate">
+            <div className="text-xs font-ui font-medium text-white truncate">
               {authorName}
             </div>
-            <div className="text-[13px] font-ui text-[var(--text-faint)] truncate">
+            <div className="text-[11px] font-ui text-[var(--text-faint)] truncate">
               @{handle}
             </div>
           </div>
         </div>
 
         {/* Right: Font name, speed pill, circular replay button */}
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="hidden sm:inline text-xs font-ui text-[var(--text-faint)] capitalize">
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="hidden sm:inline text-[11px] font-ui text-[var(--text-faint)] capitalize">
             {fontObjName}
           </span>
 
-          <span className="px-2.5 py-0.5 rounded-full border border-[var(--line)] text-xs font-ui text-white capitalize">
+          <span className="px-2 py-0.5 rounded-full border border-[var(--line)] text-[10px] font-ui text-white capitalize">
             {speedLabel}
           </span>
 
           <button
             onClick={handleReplay}
-            className="w-8 h-8 rounded-full border border-[var(--line)] flex items-center justify-center text-[var(--text-faint)] hover:text-white hover:border-white/30 transition-colors cursor-pointer"
+            className="w-7 h-7 rounded-full border border-[var(--line)] flex items-center justify-center text-[var(--text-faint)] hover:text-white hover:border-white/30 transition-colors cursor-pointer"
             title="Replay animation"
             aria-label="Replay signature animation"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
+            <RotateCcw className="w-3 h-3" />
           </button>
         </div>
       </div>
