@@ -1,0 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Inter:wght@300;400;500;600;700&family=MonteCarlo&family=Outfit:wght@400;500;600;700;800&family=Sacramento&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --color-bg: #000000;
+  --color-card: #111111;
+  --color-card-border: rgba(255, 255, 255, 0.1);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #000000;
+  color: #ffffff;
+  overflow-x: hidden;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* Minimal Card Utility */
+.autograph-card {
+  background-color: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  transition: all 0.25s ease-in-out;
+}
+
+.autograph-card:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Cursive Font Classes */
+.font-signature-logo {
+  font-family: 'Great Vibes', cursive;
+}
+.font-signature-alex {
+  font-family: 'Alex Brush', cursive;
+}
+.font-signature-dancing {
+  font-family: 'Dancing Script', cursive;
+}
+.font-signature-sacramento {
+  font-family: 'Sacramento', cursive;
+}
+.font-signature-montecarlo {
+  font-family: 'MonteCarlo', cursive;
+}

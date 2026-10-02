@@ -26,9 +26,6 @@ export const createApp = (pool, options = {}) => {
     app.get("/api/health", (req, res) => res.json({ ok: true }));
     app.use("/api/signatures", signaturesRouter(pool, options));
 
-    // Add your auth routes here, for example:
-    // app.use("/api/auth", authRouter);
-
     app.use(notFound);
     app.use(errorHandler);
 
