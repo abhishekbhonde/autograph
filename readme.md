@@ -1,78 +1,33 @@
-# Autograph-Signature
+# Autograph
 
-An animated handwriting signature generator and public Showcase gallery. Type any name, customize pen physics and cursive styles, export in high definition, and publish to the live Showcase wall.
+Type your name → watch it get handwritten stroke-by-stroke → download or publish to the showcase.
 
----
+**Live:** [autograph.anirudhjwala.in](https://autograph.anirudhjwala.in)
 
-## ⚡ Features
+## Tech Stack
 
-- **Live Handwriting Engine**: Renders realistic stroke-by-stroke signature animations with dynamic pen speed, pressure curves, and slant.
-- **Cursive Font Library**: Supports Hershey single-stroke vector scripts and Google Cursive fonts (*Brittany*, *Signatura*, *Mrs Saint Delafield*, *Allura*, *Great Vibes*, *Sacramento*, *Parisienne*).
-- **Studio Controls**: Tweak ink color, stroke width, slant angle, letter shakiness, and animation speed in real-time.
-- **Export Formats**: Download signatures as transparent **PNG**, **SVG**, or high-definition 60fps **WebM** video.
-- **Showcase Gallery**: Share and publish signatures to a public wall with live replay cards and pagination.
-- **Monochrome Dark UI**: Single-window viewport designed with `#000000` monochrome aesthetic.
+- **Frontend** — React 19, Vite, Tailwind CSS 4, Canvas API
+- **Backend** — Express 5, Node.js
+- **Database** — Neon Postgres
+- **Hosting** — Render
 
----
-
-## 🛠 Tech Stack
-
-| Layer | Technologies |
-|---|---|
-| **Frontend** | React 19, Vite, Tailwind CSS, HTML5 Canvas API, Lucide Icons |
-| **Backend** | Node.js, Express 5, Neon PostgreSQL (`pg`), Helmet, Rate Limiter |
-| **Database** | Neon PostgreSQL (Serverless DB) |
-
----
-
-## 📂 Project Structure
-
-```text
-autograph/
-├── client/     # Vite + React frontend studio & showcase app
-└── server/     # Express REST API & PostgreSQL database pool
-```
-
----
-
-## 🚀 Getting Started
-
-### 1. Server Setup
+## Run Locally
 
 ```bash
+# clone
+git clone https://github.com/abhishekbhonde/autograph.git
+cd autograph
+
+# server
 cd server
-npm install
-npm run dev
-```
+cp .env.example .env   # fill in DATABASE_URL
+npm install && npm run dev
 
-Create `server/.env`:
-```env
-PORT=5001
-DATABASE_URL=postgresql://user:password@host/neondb?sslmode=require
-CORS_ORIGIN=http://localhost:5173
-```
-
-### 2. Client Setup
-
-```bash
+# client (new terminal)
 cd client
-npm install
-npm run dev
+npm install && npm run dev
 ```
 
-Create `client/.env`:
-```env
-VITE_API_URL=http://localhost:5001/api
-```
+## Author
 
----
-
-## 🔌 API Reference
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/api/signatures?page=1&limit=10` | Fetch published signatures (paginated) |
-| `GET` | `/api/signatures/:id` | Fetch single signature by ID |
-| `POST` | `/api/signatures` | Publish signature (`name`, `style`, `seed`, `settings`) |
-| `GET` | `/health` | Server health check |
-
+**Abhishek Bhonde**

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Github } from 'lucide-react';
 
 export default function Navbar({ activeTab, setActiveTab }) {
   return (
@@ -30,8 +30,17 @@ export default function Navbar({ activeTab, setActiveTab }) {
           </button>
         </nav>
 
-        {/* Right: Primary Create Button */}
-        <div>
+        {/* Right: GitHub + Create Button */}
+        <div className="flex items-center gap-3">
+          <a
+            href="https://github.com/abhishekbhonde/autograph"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[var(--text-faint)] hover:text-white transition-colors duration-150"
+            aria-label="View source on GitHub"
+          >
+            <Github className="w-4.5 h-4.5" />
+          </a>
           <button
             onClick={() => setActiveTab('studio')}
             className="btn-primary px-3.5 py-1.5 text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-md hover:opacity-90 transition-all"
