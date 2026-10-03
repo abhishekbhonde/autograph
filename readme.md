@@ -1,68 +1,78 @@
-# Autograph
+# SCRIBBLE & CO.
 
-Type your name, watch it signed by an animated pen, and share it in a public Hall of Fame.
+An animated handwriting signature generator and public Showcase gallery. Type any name, customize pen physics and cursive styles, export in high definition, and publish to the live Showcase wall.
 
-## Features
+---
 
-- [x] Handwritten-style signature drawn stroke by stroke
-- [x] Pen physics: line gets thicker in curves and thinner on fast strokes
-- [x] Controls for ink colour, thickness, slant, shakiness and speed
-- [x] Download as SVG or transparent PNG
-- [ ] Share link for your signature
-- [ ] Hall of Fame: a public wall where everyone's signatures replay
+## ⚡ Features
 
-## How it works
+- **Live Handwriting Engine**: Renders realistic stroke-by-stroke signature animations with dynamic pen speed, pressure curves, and slant.
+- **Cursive Font Library**: Supports Hershey single-stroke vector scripts and Google Cursive fonts (*Brittany*, *Signatura*, *Mrs Saint Delafield*, *Allura*, *Great Vibes*, *Sacramento*, *Parisienne*).
+- **Studio Controls**: Tweak ink color, stroke width, slant angle, letter shakiness, and animation speed in real-time.
+- **Export Formats**: Download signatures as transparent **PNG**, **SVG**, or high-definition 60fps **WebM** video.
+- **Showcase Gallery**: Share and publish signatures to a public wall with live replay cards and pagination.
+- **Monochrome Dark UI**: Single-window viewport designed with `#000000` monochrome aesthetic.
 
-1. The name is turned into pen strokes using a single-stroke script font (Hershey).
-2. A small physics model gives every point on the stroke a speed, pressure and width.
-3. A canvas draws the strokes over time to make the animation.
-4. The same data is exported as SVG or PNG.
+---
 
-The result depends only on the name, a seed and the slider values. So a Hall of Fame entry only needs to store those few values, not the whole drawing, and the page replays it on load.
+## 🛠 Tech Stack
 
-## Tech stack
-
-| Part | Tool |
+| Layer | Technologies |
 |---|---|
-| Frontend | HTML, CSS, vanilla JavaScript, Canvas |
-| Stroke font | Hershey Script (`hersheytext` on npm, MIT) |
-| Hall of Fame (planned) | Supabase (Postgres and REST API) |
-| Hosting | Vercel or GitHub Pages |
+| **Frontend** | React 19, Vite, Tailwind CSS, HTML5 Canvas API, Lucide Icons |
+| **Backend** | Node.js, Express 5, Neon PostgreSQL (`pg`), Helmet, Rate Limiter |
+| **Database** | Neon PostgreSQL (Serverless DB) |
 
-## Run it
+---
 
-```bash
-python3 -m http.server 8000
-# open http://localhost:8000/signature.html
+## 📂 Project Structure
+
+```text
+autograph/
+├── client/     # Vite + React frontend studio & showcase app
+└── server/     # Express REST API & PostgreSQL database pool
 ```
 
-## Files
+---
 
-| File | What it is |
-|---|---|
-| `signature.html` | The app |
-| `ARCHITECTURE.md` | Detailed design, pen-physics maths, limitations |
-| `smoke.js` | Quick test (`npm i jsdom`, then `node smoke.js`) |
+## 🚀 Getting Started
 
-## Hall of Fame plan
+### 1. Server Setup
 
-One table, `signatures`:
+```bash
+cd server
+npm install
+npm run dev
+```
 
-| Column | Example |
-|---|---|
-| `id` | auto |
-| `name` | Alex Morgan |
-| `seed` | 3 |
-| `settings` | `{ "pen": 1.3, "slant": 6, "ink": "#14213d" }` |
-| `version` | 1 |
-| `created_at` | timestamp |
+Create `server/.env`:
+```env
+PORT=5001
+DATABASE_URL=postgresql://user:password@host/neondb?sslmode=require
+CORS_ORIGIN=http://localhost:5173
+```
 
-- Keep `version` so old entries still replay the same way if the code changes.
-- Add basic rate limiting and a name filter before going public.
+### 2. Client Setup
 
-## Next steps
+```bash
+cd client
+npm install
+npm run dev
+```
 
-1. Add a **Share** button that saves an entry and returns a link.
-2. Build the Hall of Fame page: a grid of cards that replay when they scroll into view.
-3. Add the rate limit and name filter.
-4. Deploy.# autograph
+Create `client/.env`:
+```env
+VITE_API_URL=http://localhost:5001/api
+```
+
+---
+
+## 🔌 API Reference
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/signatures?page=1&limit=10` | Fetch published signatures (paginated) |
+| `GET` | `/api/signatures/:id` | Fetch single signature by ID |
+| `POST` | `/api/signatures` | Publish signature (`name`, `style`, `seed`, `settings`) |
+| `GET` | `/health` | Server health check |
+
