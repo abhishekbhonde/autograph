@@ -1,4 +1,4 @@
-# SCRIBBLE & CO.
+# Autograph-Signature
 
 An animated handwriting signature generator and public Showcase gallery. Type any name, customize pen physics and cursive styles, export in high definition, and publish to the live Showcase wall.
 
