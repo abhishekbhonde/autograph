@@ -2,13 +2,12 @@ import express from "express";
 import { nanoid } from "nanoid";
 import { createLimiter } from "../../middleware/rateLimiter.js";
 import { isBlockedName } from "../../utils/blockedWords.js";
-import { validateSignature, ENGINE_VERSION, ID_PATTERN } from "./signatures.validation.js";
+import { validateSignature, ENGINE_VERSION } from "./signatures.validation.js";
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 50;
-const UNIQUE_VIOLATION = "23505";
 
-// In-memory fallback store when database is offline or not configured in dev
+// In-memory store fallback ONLY used when database is offline or not configured
 const memoryStore = [
     {
         id: "demo0001",
@@ -69,19 +68,20 @@ export const signaturesRouter = (pool, options = {}) => {
             const id = nanoid(8);
             const createdAt = new Date().toISOString();
 
-            // Try database insert first
-            try {
-                if (pool) {
+            // Insert into Database
+            if (pool) {
+                try {
                     const query = `INSERT INTO signatures (id, name, style, seed, settings, version)
                     VALUES ($1, $2, $3, $4, $5, $6)`;
                     await pool.query(query, [id, name, style, seed, settings, ENGINE_VERSION]);
+                    return res.status(201).json({ message: "Signature created successfully", id });
+                } catch (dbErr) {
+                    console.warn("DB Insert failed, using memoryStore fallback:", dbErr.message);
                 }
-            } catch (dbErr) {
-                console.warn("DB Insert fallback to memoryStore:", dbErr.message);
             }
 
-            // Always store in memory fallback as well
-            const newRecord = {
+            // Memory Fallback
+            memoryStore.unshift({
                 id,
                 name,
                 style,
@@ -89,8 +89,7 @@ export const signaturesRouter = (pool, options = {}) => {
                 settings,
                 version: ENGINE_VERSION,
                 created_at: createdAt,
-            };
-            memoryStore.unshift(newRecord);
+            });
 
             return res.status(201).json({ message: "Signature created successfully", id });
         } catch (error) {
@@ -99,7 +98,7 @@ export const signaturesRouter = (pool, options = {}) => {
         }
     });
 
-    // GET /api/signatures?limit=20&cursor=... -> Showcase list, newest first
+    // GET /api/signatures?limit=20 -> Showcase list, newest first
     router.get("/", async (req, res) => {
         try {
             let limit = DEFAULT_LIMIT;
@@ -111,26 +110,26 @@ export const signaturesRouter = (pool, options = {}) => {
                 }
             }
 
-            try {
-                if (pool) {
-                    const query = `SELECT id, name, style, seed, settings, version, created_at,
-                                          created_at::text AS created_at_raw
+            // Query Postgres database
+            if (pool) {
+                try {
+                    const query = `SELECT id, name, style, seed, settings, version, created_at
                     FROM signatures
                     ORDER BY created_at DESC, id DESC
                     LIMIT $1`;
                     const result = await pool.query(query, [limit]);
-                    if (result.rows && result.rows.length > 0) {
+                    if (result && Array.isArray(result.rows)) {
                         return res.status(200).json({
                             items: result.rows.map(toApi),
                             nextCursor: null,
                         });
                     }
+                } catch (dbErr) {
+                    console.warn("DB Query failed, using memoryStore fallback:", dbErr.message);
                 }
-            } catch (dbErr) {
-                console.warn("DB Query fallback to memoryStore:", dbErr.message);
             }
 
-            // Fallback to memoryStore
+            // Memory Fallback ONLY if DB query failed
             return res.status(200).json({
                 items: memoryStore.map(toApi),
                 nextCursor: null,
@@ -146,23 +145,25 @@ export const signaturesRouter = (pool, options = {}) => {
         try {
             const { id } = req.params;
 
-            try {
-                if (pool) {
+            if (pool) {
+                try {
                     const result = await pool.query(
                         `SELECT id, name, style, seed, settings, version, created_at
                          FROM signatures WHERE id = $1`,
                         [id]
                     );
 
-                    if (result.rows && result.rows.length > 0) {
+                    if (result && result.rows.length > 0) {
                         return res.status(200).json(toApi(result.rows[0]));
+                    } else if (result && result.rows.length === 0) {
+                        return res.status(404).json({ message: "Signature not found" });
                     }
+                } catch (dbErr) {
+                    console.warn("DB GetById failed, using memoryStore fallback:", dbErr.message);
                 }
-            } catch (dbErr) {
-                console.warn("DB GetById fallback to memoryStore:", dbErr.message);
             }
 
-            // Fallback to memoryStore
+            // Memory Fallback
             const found = memoryStore.find((item) => item.id === id);
             if (found) {
                 return res.status(200).json(toApi(found));
