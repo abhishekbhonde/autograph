@@ -7,6 +7,15 @@ if (!process.env.DATABASE_URL) {
     process.exit(1);
 }
 
+// Ensure Database constraints are updated on startup
+if (pool) {
+    pool.query(`
+        ALTER TABLE signatures DROP CONSTRAINT IF EXISTS signatures_style_valid;
+        ALTER TABLE signatures DROP CONSTRAINT IF EXISTS signatures_name_len;
+        ALTER TABLE signatures ADD CONSTRAINT signatures_name_len CHECK (char_length(name) BETWEEN 1 AND 80);
+    `).then(() => console.log("Database constraints verified.")).catch((err) => console.warn("Auto DB migration notice:", err.message));
+}
+
 const port = process.env.PORT || 3000;
 const server = createApp(pool).listen(port, () => {
     console.log(`API listening on port ${port}`);
