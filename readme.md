@@ -2,7 +2,7 @@
 
 Type your name → watch it get handwritten stroke-by-stroke → download or publish to the showcase.
 
-**Live:** [autograph.anirudhjwala.in](https://autograph.anirudhjwala.in)
+**Live:** [create-signature.abhishekk.xyz](https://create-signature.abhishekk.xyz/)
 
 ## Tech Stack
 
